@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeNova Universal OS</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(15, 23, 42, 0.9);
+            --text-main: #e2e8f0;
+            --accent: #00d2ff;
+            --border: rgba(0, 210, 255, 0.2);
+            --font-mono: 'Consolas', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 80%);
+            color: var(--text-main);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        /* Responsive Grid System */
+        .dashboard-wrapper {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobile Default: 1 column */
+            gap: 15px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Tablet & PC Layout Changes */
+        @media (min-width: 768px) {
+            .dashboard-wrapper { grid-template-columns: 1fr 1fr; } /* Tablet: 2 columns */
+        }
+
+        @media (min-width: 1200px) {
+            .dashboard-wrapper { grid-template-columns: 350px 1fr 350px; } /* PC/TV: 3 columns */
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 0;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Map height needs to be responsive */
+        .map-container {
+            height: 300px; /* Small default */
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (min-width: 1200px) {
+            .map-container { height: 100%; min-height: 500px; }
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* HUD Styling */
+        .time { font-size: clamp(2rem, 8vw, 3.5rem); font-weight: bold; font-family: var(--font-mono); color: #fff; text-align: center; }
+        .sys-stat { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tag { font-size: 0.7rem; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        
+        .status-bar { height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .status-fill { height: 100%; background: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 style="margin:0; font-size: 1.5rem; letter-spacing: 2px;">CODENOVA_UNIVERSAL_v2.0</h1>
+    </header>
+
+    <div class="dashboard-wrapper">
+        
+        <div class="panel">
+            <div class="time" id="clock">00:00:00</div>
+            <div id="date" style="text-align: center; opacity: 0.7; margin-bottom: 15px;">Detecting...</div>
+            
+            <h3 style="color:var(--accent); margin:0;">ENVIRONMENT</h3>
+            <div class="sys-stat"><span>City:</span> <span id="loc">Scanning...</span></div>
+            <div class="sys-stat"><span>Temp:</span> <span id="temp">--</span></div>
+            <div class="sys-stat"><span>Weather:</span> <span id="cond">--</span></div>
+            
+            <h3 style="color:var(--accent); margin:10px 0 0 0;">SYSTEM INFO</h3>
+            <div class="sys-stat"><span>Device Type:</span> <span id="dev-type">Detecting...</span></div>
+            <div class="sys-stat"><span>Orientation:</span> <span id="orient">--</span></div>
+        </div>
+
+        <div class="panel" style="padding: 10px;">
+            <div class="map-container">
+                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.8); padding:5px; border-radius:4px; font-size:0.7rem; font-family:var(--font-mono); color:var(--accent); z-index:10;">
+                    LIVE_SATELLITE_LINK: <span id="coords">WAITING_GPS</span>
+                </div>
+                <iframe id="earth-map" src="https://maps.google.com/maps?q=Sydney&t=k&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3 style="color:var(--accent); margin:0;">SERVER NODES</h3>
+            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px;">
+                <div class="sys-stat"><span>Main Map Host:</span> <span style="color:#2ed573;">ONLINE</span></div>
+                <div class="status-bar"><div class="status-fill" style="width: 42%;"></div></div>
+                <p style="font-size: 0.7rem; margin: 5px 0 0 0; opacity: 0.6;">Node Latency: 18ms</p>
+            </div>
+
+            <h3 style="color:var(--accent); margin:10px 0 0 0;">LATEST INTEL</h3>
+            <div id="news-feed">
+                <div style="margin-bottom:12px;">
+                    <span class="tag">DEV</span> <strong style="font-size:0.9rem;">C++ Engine Stability</strong>
+                    <p style="font-size:0.8rem; margin:3px 0; opacity:0.8;">New memory allocation benchmarks for ARM-based tablets and handhelds.</p>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <span class="tag">HW</span> <strong style="font-size:0.9rem;">Mini PC Cooling</strong>
+                    <p style="font-size:0.8rem; margin:3px 0; opacity:0.8;">Custom heatsink mods for server hosting in small form factors.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Clock Logic
+        function update() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-AU', { hour12: false });
+            document.getElementById('date').innerText = now.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
+            
+            // Auto-detect Device Type based on width
+            const w = window.innerWidth;
+            let type = "Desktop / TV";
+            if (w < 768) type = "Smartphone";
+            else if (w < 1200) type = "Tablet / Laptop";
+            document.getElementById('dev-type').innerText = type;
+            document.getElementById('orient').innerText = (window.innerHeight > window.innerWidth) ? "Portrait" : "Landscape";
+        }
+        setInterval(update, 1000);
+        update();
+
+        // 2. Location & Satellite Logic
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                const { latitude: lat, longitude: lon } = pos.coords;
+                document.getElementById('coords').innerText = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+                
+                // Update Satellite Frame
+                document.getElementById('earth-map').src = `https://maps.google.com/maps?q=${lat},${lon}&t=k&z=15&ie=UTF8&iwloc=&output=embed`;
+                
+                // Weather Fetch
+                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+                    .then(r => r.json()).then(data => {
+                        document.getElementById('temp').innerText = data.current_weather.temperature + "°C";
+                        document.getElementById('cond').innerText = "Active Feed";
+                    });
+
+                // City Name Fetch
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(r => r.json()).then(data => {
+                        document.getElementById('loc').innerText = data.address.city || data.address.suburb || "Local Node";
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
